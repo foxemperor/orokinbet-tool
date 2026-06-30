@@ -437,4 +437,4 @@ export function phoneticize(word: string): OrokinPhoneme[] {
     return final;
   }
 
-  export { orokinPhoneticize };
+  export { phoneticize as orokinPhoneticize };
