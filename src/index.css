@@ -314,3 +314,32 @@ body {
   display: block;
   max-width: 100%;
 }
+
+/* -- Space tag -- */
+.space-tag {
+  background: var(--bg-dark);
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* -- Space button -- */
+.btn-space {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+  font-size: 1rem;
+}
+.btn-space:hover {
+  background: var(--accent-dim);
+  color: var(--bg-dark);
+}
+
+/* -- OrokinCanvas min height so it's always visible -- */
+.orokin-canvas-wrapper {
+  min-height: 140px;
+  align-items: center;
+  overflow-x: auto;
+}
+.orokin-canvas-wrapper canvas {
+  image-rendering: pixelated;
+}
