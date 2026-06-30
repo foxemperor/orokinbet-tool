@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { orokinPhoneticize } from './orokinPhoneticize';
 import type { OrokinPhoneme } from './orokinPhoneticize';
 import OrokinCanvas from './components/OrokinCanvas';
 import VirtualKeyboard from './components/VirtualKeyboard';
@@ -9,22 +10,21 @@ type Mode = 'english-to-orokin' | 'orokin-input';
 export default function App() {
   const [mode, setMode] = useState<Mode>('english-to-orokin');
   const [englishText, setEnglishText] = useState('');
-  const [orokinInput, setOrokinInput] = useState('');
+  const [vkPhonemes, setVkPhonemes] = useState<OrokinPhoneme[]>([]);
   const [swapped, setSwapped] = useState(false);
 
-  const handleSwap = () => setSwapped(!swapped);
+  // English -> Orokin phonemes
+  const engPhonemes: OrokinPhoneme[] = orokinPhoneticize(englishText);
+
+  const handleSwap = () => setSwapped(s => !s);
 
   const handleVKInsert = (phoneme: OrokinPhoneme) => {
-    setOrokinInput(prev => prev + (prev ? ' ' : '') + phoneme);
+    setVkPhonemes(prev => [...prev, phoneme]);
   };
-
   const handleVKBackspace = () => {
-    const parts = orokinInput.trim().split(' ');
-    parts.pop();
-    setOrokinInput(parts.join(' '));
+    setVkPhonemes(prev => prev.slice(0, -1));
   };
-
-  const handleVKClear = () => setOrokinInput('');
+  const handleVKClear = () => setVkPhonemes([]);
 
   return (
     <div className="app">
@@ -52,7 +52,7 @@ export default function App() {
         <div className="translator-panel">
           <div className="panel">
             <div className="panel-block">
-              <label>{swapped ? 'Orokin' : 'English'}</label>
+              <label>{swapped ? 'Orokin (фонемы)' : 'English'}</label>
               {!swapped ? (
                 <textarea
                   className="text-input"
@@ -62,18 +62,20 @@ export default function App() {
                   rows={4}
                 />
               ) : (
-                <OrokinCanvas text={englishText} phonetic={true} />
+                <div className="phoneme-list">
+                  {engPhonemes.map((ph, i) => (
+                    <span key={i} className="phoneme-tag">{ph}</span>
+                  ))}
+                </div>
               )}
             </div>
 
-            <button className="swap-btn" onClick={handleSwap} title="Поменять местами">
-              ⇄
-            </button>
+            <button className="swap-btn" onClick={handleSwap} title="Поменять местами">⇄</button>
 
             <div className="panel-block">
               <label>{swapped ? 'English' : 'Orokin (глифы)'}</label>
               {!swapped ? (
-                <OrokinCanvas text={englishText} phonetic={true} />
+                <OrokinCanvas phonemes={engPhonemes} />
               ) : (
                 <textarea
                   className="text-input"
@@ -85,6 +87,12 @@ export default function App() {
               )}
             </div>
           </div>
+
+          {engPhonemes.length > 0 && (
+            <div className="phoneme-debug">
+              <strong>Фонемы:</strong> {engPhonemes.join(' · ')}
+            </div>
+          )}
         </div>
       )}
 
@@ -93,16 +101,18 @@ export default function App() {
           <div className="vk-output">
             <label>Введённые фонемы:</label>
             <div className="phoneme-list">
-              {orokinInput ? (
-                orokinInput.split(' ').map((ph, i) => (
-                  <span key={i} className="phoneme-tag">{ph}</span>
-                ))
-              ) : (
+              {vkPhonemes.length === 0 ? (
                 <span className="placeholder">Нажимайте кнопки клавиатуры...</span>
+              ) : (
+                vkPhonemes.map((ph, i) => (
+                  <span key={i} className={`phoneme-tag${ph === ' ' ? ' space-tag' : ''}`}>
+                    {ph === ' ' ? '␣' : ph}
+                  </span>
+                ))
               )}
             </div>
           </div>
-          <OrokinCanvas text={orokinInput} phonetic={false} />
+          <OrokinCanvas phonemes={vkPhonemes} />
           <VirtualKeyboard
             onInsert={handleVKInsert}
             onBackspace={handleVKBackspace}
