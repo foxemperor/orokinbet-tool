@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { orokinPhoneticize } from './orokinPhoneticize';
 import type { OrokinPhoneme } from './orokinPhoneticize';
 import OrokinCanvas from './components/OrokinCanvas';
@@ -7,27 +7,74 @@ import './index.css';
 
 type Mode = 'english-to-orokin' | 'orokin-input';
 
+/** Download canvas as PNG */
+function downloadCanvas(canvas: HTMLCanvasElement, filename = 'orokin.png') {
+  const link = document.createElement('a')
+  link.download = filename
+  link.href = canvas.toDataURL('image/png')
+  link.click()
+}
+
+/** Copy canvas image to clipboard (modern browsers) */
+async function copyCanvas(canvas: HTMLCanvasElement) {
+  try {
+    const blob = await new Promise<Blob | null>(resolve =>
+      canvas.toBlob(resolve, 'image/png')
+    )
+    if (!blob) return false
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': blob })
+    ])
+    return true
+  } catch {
+    return false
+  }
+}
+
 export default function App() {
   const [mode, setMode] = useState<Mode>('english-to-orokin');
   const [englishText, setEnglishText] = useState('');
   const [vkPhonemes, setVkPhonemes] = useState<OrokinPhoneme[]>([]);
   const [swapped, setSwapped] = useState(false);
+  const [copyMsg, setCopyMsg] = useState<string | null>(null);
 
-  // English -> Orokin phonemes
+  // Refs to the rendered canvases for save/copy
+  const engCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const vkCanvasRef  = useRef<HTMLCanvasElement | null>(null)
+
   const engPhonemes: OrokinPhoneme[] = orokinPhoneticize(englishText);
 
   const handleSwap = () => setSwapped(s => !s);
 
-  const handleVKInsert = (phoneme: OrokinPhoneme) => {
+  const handleVKInsert = (phoneme: OrokinPhoneme) =>
     setVkPhonemes(prev => [...prev, phoneme]);
-  };
-  const handleVKSpace = () => {
+  const handleVKSpace = () =>
     setVkPhonemes(prev => [...prev, ' ' as OrokinPhoneme]);
-  };
-  const handleVKBackspace = () => {
+  const handleVKBackspace = () =>
     setVkPhonemes(prev => prev.slice(0, -1));
-  };
   const handleVKClear = () => setVkPhonemes([]);
+
+  const onEngCanvasReady = useCallback((c: HTMLCanvasElement) => {
+    engCanvasRef.current = c
+  }, [])
+  const onVkCanvasReady = useCallback((c: HTMLCanvasElement) => {
+    vkCanvasRef.current = c
+  }, [])
+
+  const activeCanvas = () => mode === 'english-to-orokin' ? engCanvasRef.current : vkCanvasRef.current
+
+  const handleDownload = () => {
+    const c = activeCanvas()
+    if (c) downloadCanvas(c, 'orokin-text.png')
+  }
+
+  const handleCopy = async () => {
+    const c = activeCanvas()
+    if (!c) return
+    const ok = await copyCanvas(c)
+    setCopyMsg(ok ? '✓ Скопировано!' : 'Браузер не поддерживает копирование')
+    setTimeout(() => setCopyMsg(null), 3000)
+  }
 
   return (
     <div className="app">
@@ -82,7 +129,7 @@ export default function App() {
             <div className="panel-block">
               <label>{swapped ? 'English' : 'Orokin (глифы)'}</label>
               {!swapped ? (
-                <OrokinCanvas phonemes={engPhonemes} />
+                <OrokinCanvas phonemes={engPhonemes} onCanvasReady={onEngCanvasReady} />
               ) : (
                 <textarea
                   className="text-input"
@@ -94,6 +141,13 @@ export default function App() {
               )}
             </div>
           </div>
+          {engPhonemes.length > 0 && (
+            <div className="canvas-actions">
+              <button className="btn btn-save" onClick={handleDownload}>⬇ Скачать PNG</button>
+              <button className="btn btn-copy" onClick={handleCopy}>📋 Копировать</button>
+              {copyMsg && <span className="copy-msg">{copyMsg}</span>}
+            </div>
+          )}
           {engPhonemes.length > 0 && (
             <div className="phoneme-debug">
               <strong>Фонемы:</strong> {engPhonemes.join(' · ')}
@@ -118,7 +172,14 @@ export default function App() {
               )}
             </div>
           </div>
-          <OrokinCanvas phonemes={vkPhonemes} />
+          <OrokinCanvas phonemes={vkPhonemes} onCanvasReady={onVkCanvasReady} />
+          {vkPhonemes.length > 0 && (
+            <div className="canvas-actions">
+              <button className="btn btn-save" onClick={handleDownload}>⬇ Скачать PNG</button>
+              <button className="btn btn-copy" onClick={handleCopy}>📋 Копировать</button>
+              {copyMsg && <span className="copy-msg">{copyMsg}</span>}
+            </div>
+          )}
           <VirtualKeyboard
             onInsert={handleVKInsert}
             onBackspace={handleVKBackspace}
