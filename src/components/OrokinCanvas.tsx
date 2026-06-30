@@ -5,15 +5,15 @@ const IMG_BASE = import.meta.env.BASE_URL + 'images/orokin/'
 
 /**
  * SCALE: pixel-perfect upscale factor.
- * PNG glyphs are ~23×26px (consonants) and ~9×8px (vowels).
+ * PNG glyphs are ~23x26px (consonants) and ~9x8px (vowels).
  * We render with imageSmoothingEnabled=false and ctx.scale(SCALE),
- * then the canvas CSS width = canvas.width / SCALE (so it appears the right size).
+ * then set canvas CSS size = canvas.width / SCALE.
  */
-const SCALE      = 4     // pixel-perfect ×4 upscale
-const CELL_PAD   = 2     // horizontal padding between cells (in native px)
-const WORD_GAP   = 8     // extra gap between words (native px)
-const VOW_ZONE   = 10    // height reserved above consonant baseline for vowels (native px)
-const CELL_PAD_V = 2     // vertical padding top and bottom (native px)
+const SCALE      = 4
+const CELL_PAD   = 2   // horizontal gap between cells (native px)
+const WORD_GAP   = 8   // extra gap between words (native px)
+const VOW_ZONE   = 10  // gap between vowel bottom and consonant top (native px)
+const CELL_PAD_V = 2   // vertical padding top and bottom (native px)
 
 const BG_COLOR = '#f0e6d0'
 
@@ -43,38 +43,61 @@ function isMisc(p: string)  { return (MISC   as string[]).includes(p) }
 type Syllable = { cons: string | null; vowels: string[] }
 
 /**
- * Each consonant starts a new syllable.
- * Vowels attach to the PRECEDING consonant.
- * Leading vowels get a ghost 'h' (silent, rendered as 'h' glyph).
+ * TennoTyper rule:
+ *   Vowels appear ABOVE the FOLLOWING consonant.
+ *   Leading vowels (before any consonant) accumulate and belong to the
+ *   NEXT consonant encountered.
+ *   Trailing vowels (after the last consonant) get a ghost 'h'.
+ *
+ * Algorithm:
+ *   - Keep a pendingVowels buffer.
+ *   - When a consonant arrives, it takes all pending vowels.
+ *   - When a space or misc arrives, flush any pending vowels as ghost-h first.
  */
 function toSyllables(phonemes: OrokinPhoneme[]): (Syllable | ' ')[] {
   const result: (Syllable | ' ')[] = []
-  let cur: Syllable | null = null
-  const flush = () => { if (cur) { result.push(cur); cur = null } }
-  for (const ph of phonemes) {
-    if (ph === ' ') { flush(); result.push(' '); continue }
-    if (isMisc(ph)) { flush(); result.push({ cons: ph, vowels: [] }); continue }
-    if (isVowel(ph)) {
-      if (!cur) cur = { cons: null, vowels: [] }  // ghost-h
-      cur.vowels.push(ph)
-    } else {
-      flush()
-      cur = { cons: ph, vowels: [] }
+  const pendingVowels: string[] = []
+
+  const flushGhostH = () => {
+    if (pendingVowels.length > 0) {
+      result.push({ cons: null, vowels: [...pendingVowels] })
+      pendingVowels.length = 0
     }
   }
-  flush()
+
+  for (const ph of phonemes) {
+    if (ph === ' ') {
+      flushGhostH()
+      result.push(' ')
+      continue
+    }
+    if (isMisc(ph)) {
+      flushGhostH()
+      result.push({ cons: ph, vowels: [] })
+      continue
+    }
+    if (isVowel(ph)) {
+      // Accumulate - belongs to the NEXT consonant
+      pendingVowels.push(ph)
+    } else {
+      // Consonant: take all pending vowels
+      result.push({ cons: ph, vowels: [...pendingVowels] })
+      pendingVowels.length = 0
+    }
+  }
+  // Trailing vowels with no following consonant -> ghost-h
+  flushGhostH()
+
   return result
 }
 
-// ---- Geometry helpers (all in native px, before SCALE) ----
+// ---- Geometry (all in native px before SCALE) ----
 
-/** Width of consonant image in native px (fallback to 20 if not loaded) */
 function consNW(ph: string | null): number {
   const img = getImg(ph ?? 'h')
   return ready(img) ? img.naturalWidth : 20
 }
 
-/** Width of a syllable cell (max of cons width and total vowel widths) */
 function cellW(syl: Syllable): number {
   const cw = consNW(syl.cons)
   let vw = 0
@@ -85,7 +108,6 @@ function cellW(syl: Syllable): number {
   return Math.max(cw, vw, 8)
 }
 
-/** Tallest consonant height among all syllables */
 function maxConsH(syllables: (Syllable | ' ')[]): number {
   let h = 0
   for (const s of syllables) {
@@ -96,7 +118,6 @@ function maxConsH(syllables: (Syllable | ' ')[]): number {
   return h || 26
 }
 
-/** Tallest vowel height among all syllables */
 function maxVowH(syllables: (Syllable | ' ')[]): number {
   let h = 0
   for (const s of syllables) {
@@ -114,14 +135,14 @@ function maxVowH(syllables: (Syllable | ' ')[]): number {
 function renderGlyphs(
   ctx: CanvasRenderingContext2D,
   syllables: (Syllable | ' ')[]
-): { w: number; h: number } {
+): void {
   ctx.imageSmoothingEnabled = false
 
-  const consH  = maxConsH(syllables)
-  const vowH   = maxVowH(syllables)
-  const lineH  = CELL_PAD_V + vowH + VOW_ZONE + consH + CELL_PAD_V  // total native height
+  const consH = maxConsH(syllables)
+  const vowH  = maxVowH(syllables)
+  const lineH = CELL_PAD_V + vowH + VOW_ZONE + consH + CELL_PAD_V
 
-  // First pass: measure total width
+  // Measure total width
   let totalW = 0
   for (const s of syllables) {
     if (s === ' ') { totalW += WORD_GAP + CELL_PAD; continue }
@@ -129,21 +150,17 @@ function renderGlyphs(
   }
   totalW = Math.max(totalW - CELL_PAD, 8)
 
-  // Resize canvas (in SCALE coords)
-  ctx.canvas.width  = totalW  * SCALE
-  ctx.canvas.height = lineH   * SCALE
-  // CSS display size = native canvas size
+  ctx.canvas.width  = totalW * SCALE
+  ctx.canvas.height = lineH  * SCALE
   ctx.canvas.style.width  = `${totalW}px`
   ctx.canvas.style.height = `${lineH}px`
 
   ctx.imageSmoothingEnabled = false
   ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0)
 
-  // Background
   ctx.fillStyle = BG_COLOR
   ctx.fillRect(0, 0, totalW, lineH)
 
-  // Baseline Y of consonant top edge
   const consTop = CELL_PAD_V + vowH + VOW_ZONE
 
   let x = 0
@@ -151,14 +168,14 @@ function renderGlyphs(
     if (s === ' ') { x += WORD_GAP + CELL_PAD; continue }
     const cw = cellW(s)
 
-    // Draw consonant (centered in cell)
-    const consImg = getImg(s.cons ?? 'h')
-    if (ready(consImg)) {
-      const dx = Math.round((cw - consImg.naturalWidth) / 2)
-      ctx.drawImage(consImg, x + dx, consTop, consImg.naturalWidth, consImg.naturalHeight)
+    // Draw consonant centered in cell
+    const cImg = getImg(s.cons ?? 'h')
+    if (ready(cImg)) {
+      const dx = Math.round((cw - cImg.naturalWidth) / 2)
+      ctx.drawImage(cImg, x + dx, consTop, cImg.naturalWidth, cImg.naturalHeight)
     }
 
-    // Draw vowels centered horizontally, pinned to top of vowel zone
+    // Draw vowels centered horizontally above consonant
     if (s.vowels.length > 0) {
       let totalVW = 0
       const vImgs: HTMLImageElement[] = []
@@ -168,7 +185,6 @@ function renderGlyphs(
       }
       let vx = x + Math.round((cw - totalVW) / 2)
       for (const vi of vImgs) {
-        // Vowel sits bottom-aligned to (consTop - VOW_ZONE/2)
         const vy = CELL_PAD_V + (vowH - vi.naturalHeight)
         ctx.drawImage(vi, vx, vy, vi.naturalWidth, vi.naturalHeight)
         vx += vi.naturalWidth
@@ -177,8 +193,6 @@ function renderGlyphs(
 
     x += cw + CELL_PAD
   }
-
-  return { w: totalW, h: lineH }
 }
 
 interface Props {
@@ -197,7 +211,7 @@ export default function OrokinCanvas({ phonemes, onCanvasReady }: Props) {
 
     if (phonemes.length === 0) {
       canvas.width  = 4
-      canvas.height = 134 * SCALE  // ~134px native = pleasant empty height
+      canvas.height = 134 * SCALE
       canvas.style.width  = '4px'
       canvas.style.height = '134px'
       ctx.setTransform(1, 0, 0, 1, 0, 0)
@@ -206,7 +220,6 @@ export default function OrokinCanvas({ phonemes, onCanvasReady }: Props) {
       return
     }
 
-    // Preload all needed images, then render
     const needed = new Set<string>()
     phonemes.forEach(ph => { if (ph !== ' ') needed.add(ph) })
     needed.add('h')
