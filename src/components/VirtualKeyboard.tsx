@@ -10,6 +10,7 @@ interface Props {
   onBackspace: () => void
   onClear: () => void
   onSpace: () => void
+  theme?: 'dark' | 'light'
 }
 
 const IMG_BASE = import.meta.env.BASE_URL + 'images/orokin/'
@@ -28,9 +29,10 @@ const MISC_KEYS: OrokinPhoneme[] = [
   '0','1','2','3','4','5','6','7','8','9'
 ]
 
-export default function VirtualKeyboard({ onInsert, onBackspace, onClear, onSpace }: Props) {
+export default function VirtualKeyboard({ onInsert, onBackspace, onClear, onSpace, theme = 'dark' }: Props) {
+  const isDark = theme === 'dark'
   return (
-    <div className="vkb">
+    <div className={`vkb${isDark ? '' : ' vkb-light'}`}>
       <div className="vkb-section-label">Согласные</div>
       <div className="vkb-row">
         {CONSONANTS.map(ph => (
@@ -40,12 +42,12 @@ export default function VirtualKeyboard({ onInsert, onBackspace, onClear, onSpac
             title={ph}
             onClick={() => onInsert(ph)}
           >
-            <img src={imgSrc(ph)} alt={ph} />
+            <img src={imgSrc(ph)} alt={ph} className={isDark ? 'glyph-invert' : ''} />
             <span className="key-phoneme">{ph}</span>
           </button>
         ))}
       </div>
-      <div className="vkb-section-label">Гласные — ставятся над предыдущим согласным</div>
+      <div className="vkb-section-label">Гласные — ставятся над предыдущей согласной</div>
       <div className="vkb-row">
         {(VOWELS as OrokinPhoneme[]).map(ph => (
           <button
@@ -54,7 +56,7 @@ export default function VirtualKeyboard({ onInsert, onBackspace, onClear, onSpac
             title={ph}
             onClick={() => onInsert(ph)}
           >
-            <img src={imgSrc(ph)} alt={ph} />
+            <img src={imgSrc(ph)} alt={ph} className={isDark ? 'glyph-invert' : ''} />
             <span className="key-phoneme">{ph}</span>
           </button>
         ))}
@@ -68,15 +70,23 @@ export default function VirtualKeyboard({ onInsert, onBackspace, onClear, onSpac
             title={ph}
             onClick={() => onInsert(ph)}
           >
-            <img src={imgSrc(ph)} alt={ph} />
+            <img src={imgSrc(ph)} alt={ph} className={isDark ? 'glyph-invert' : ''} />
             <span className="key-phoneme">{ph}</span>
           </button>
         ))}
       </div>
-      <div className="btn-row" style={{ marginTop: 8 }}>
-        <button className="btn btn-space" onClick={onSpace} title="Пробел">␣ Пробел</button>
-        <button className="btn" onClick={onBackspace}>⌫ Удалить</button>
-        <button className="btn btn-danger" onClick={onClear}>✕ Очистить</button>
+      <div className="vkb-bottom-row">
+        <button className="vkb-key vkb-key-backspace" onClick={onBackspace} title="Удалить последний символ">
+          <span className="key-icon">⌫</span>
+          <span className="key-phoneme">Удалить</span>
+        </button>
+        <button className="vkb-key vkb-key-space" onClick={onSpace} title="Пробел">
+          <span className="key-phoneme">пробел</span>
+        </button>
+        <button className="vkb-key vkb-key-clear" onClick={onClear} title="Очистить всё">
+          <span className="key-icon">✕</span>
+          <span className="key-phoneme">Очистить</span>
+        </button>
       </div>
     </div>
   )
