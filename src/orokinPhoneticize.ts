@@ -437,12 +437,4 @@ export function phoneticize(word: string): OrokinPhoneme[] {
     return final;
   }
 
-  const result: OrokinPhoneme[] = [];
-  for (const word of words) {
-    const phonemes = processWord(word);
-    result.push(...phonemes);
-  }
-  return result;
-}
-
-export { orokinPhoneticize };
+  export { orokinPhoneticize };
