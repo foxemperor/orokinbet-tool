@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { OrokinPhoneme, VOWELS, MISC, phoneticize, literal } from '../orokinPhoneticize'
 
-const IMG_BASE = '/images/orokin/'
+const IMG_BASE = import.meta.env.BASE_URL + 'images/orokin/'
 const VOWELS_OFFSET = 12
 const LETTER_SPACING = 5
 const SPACE_WIDTH = 22
