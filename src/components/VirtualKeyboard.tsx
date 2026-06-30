@@ -11,7 +11,7 @@ interface Props {
   onClear: () => void
 }
 
-const IMG_BASE = '/images/orokin/'
+const IMG_BASE = import.meta.env.BASE_URL + 'images/orokin/'
 
 function imgSrc(ph: OrokinPhoneme): string {
   switch (ph) {
