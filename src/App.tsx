@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { orokinPhoneticize } from './orokinPhoneticize';
 import type { OrokinPhoneme } from './orokinPhoneticize';
 import OrokinCanvas from './components/OrokinCanvas';
@@ -81,6 +81,15 @@ export default function App() {
   return (
     <div className={`app theme-${theme}`}>
       <header className="app-header">
+        
+  // Apply theme class to body element
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('theme-light');
+    } else {
+      document.body.classList.remove('theme-light');
+    }
+  }, [theme]);
         <div className="header-row">
           <div />
           <div>
