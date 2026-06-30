@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { orokinPhoneticize } from './orokinPhoneticize';
+import type { OrokinPhoneme } from './orokinPhoneticize';
 import OrokinCanvas from './components/OrokinCanvas';
 import VirtualKeyboard from './components/VirtualKeyboard';
 import './index.css';
@@ -9,37 +10,28 @@ type Mode = 'english-to-orokin' | 'orokin-input';
 export default function App() {
   const [mode, setMode] = useState<Mode>('english-to-orokin');
   const [englishText, setEnglishText] = useState('');
-  const [orokinInput, setOrokinInput] = useState('');
+  const [orokinInput, setOrokinInput] = useState<OrokinPhoneme[]>([]);
   const [swapped, setSwapped] = useState(false);
 
-  // Phonemes derived from english text
-  const phonemes = orokinPhoneticize(englishText);
+  const phonemes: OrokinPhoneme[] = orokinPhoneticize(englishText);
 
-  // Swap: exchange english input with orokin phoneme string
-  const handleSwap = () => {
-    setSwapped(!swapped);
-  };
+  const handleSwap = () => setSwapped(!swapped);
 
-  const handleVKInsert = (phoneme: string) => {
-    setOrokinInput(prev => prev + phoneme);
+  const handleVKInsert = (phoneme: OrokinPhoneme) => {
+    setOrokinInput(prev => [...prev, phoneme]);
   };
 
   const handleVKBackspace = () => {
     setOrokinInput(prev => prev.slice(0, -1));
   };
 
-  const handleVKClear = () => {
-    setOrokinInput('');
-  };
-
-  // Phonemes for orokin direct input mode
-  const orokinPhonemes = orokinInput.split(' ').filter(Boolean);
+  const handleVKClear = () => setOrokinInput([]);
 
   return (
     <div className="app">
       <header className="app-header">
         <h1>Orokinbet Tool</h1>
-        <p className="subtitle">Инструмент для работы с алфавитом Оrokинbет</p>
+        <p className="subtitle">Инструмент для работы с алфавитом Orokinbet</p>
       </header>
 
       <div className="mode-tabs">
@@ -59,7 +51,7 @@ export default function App() {
 
       {mode === 'english-to-orokin' && (
         <div className="translator-panel">
-          <div className={`panel${swapped ? ' swapped' : ''}`}>
+          <div className="panel">
             <div className="panel-block">
               <label>{swapped ? 'Orokin (фонемы)' : 'English'}</label>
               {!swapped ? (
@@ -72,7 +64,9 @@ export default function App() {
                 />
               ) : (
                 <div className="phoneme-list">
-                  {phonemes.map((ph, i) => <span key={i} className="phoneme-tag">{ph}</span>)}
+                  {phonemes.map((ph: OrokinPhoneme, i: number) => (
+                    <span key={i} className="phoneme-tag">{ph}</span>
+                  ))}
                 </div>
               )}
             </div>
@@ -110,11 +104,15 @@ export default function App() {
           <div className="vk-output">
             <label>Введённые фонемы:</label>
             <div className="phoneme-list">
-              {orokinPhonemes.map((ph, i) => <span key={i} className="phoneme-tag">{ph}</span>)}
-              {orokinInput === '' && <span className="placeholder">Нажимайте кнопки клавиатуры...</span>}
+              {orokinInput.map((ph: OrokinPhoneme, i: number) => (
+                <span key={i} className="phoneme-tag">{ph}</span>
+              ))}
+              {orokinInput.length === 0 && (
+                <span className="placeholder">Нажимайте кнопки клавиатуры...</span>
+              )}
             </div>
           </div>
-          <OrokinCanvas phonemes={orokinPhonemes} />
+          <OrokinCanvas phonemes={orokinInput} />
           <VirtualKeyboard
             onInsert={handleVKInsert}
             onBackspace={handleVKBackspace}
