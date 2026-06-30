@@ -78,11 +78,7 @@ export default function App() {
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
-  return (
-    <div className={`app theme-${theme}`}>
-      <header className="app-header">
-        
-  // Apply theme class to body element
+    // Apply theme class to body element
   useEffect(() => {
     if (theme === 'light') {
       document.body.classList.add('theme-light');
@@ -90,6 +86,12 @@ export default function App() {
       document.body.classList.remove('theme-light');
     }
   }, [theme]);
+
+  return (
+    <div className={`app theme-${theme}`}>
+      <header className="app-header">
+        
+  
         <div className="header-row">
           <div />
           <div>
