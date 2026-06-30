@@ -14,7 +14,7 @@ const CANVAS_H   = PAD_TOP + VOWEL_H + GLYPH_H + PAD_BOT
 const BASELINE_Y = PAD_TOP + VOWEL_H  // top of consonant row
 
 // Dark background to match the UI theme
-const BG_COLOR = '#1c2030'
+const BG_COLOR = '#'#f0e6d0''
 
 const imgCache: Record<string, HTMLImageElement> = {}
 
