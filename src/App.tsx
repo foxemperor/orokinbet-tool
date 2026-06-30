@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { orokinPhoneticize } from './orokinPhoneticize';
 import type { OrokinPhoneme } from './orokinPhoneticize';
 import OrokinCanvas from './components/OrokinCanvas';
