@@ -3,12 +3,18 @@ import { OrokinPhoneme, VOWELS, MISC } from '../orokinPhoneticize'
 
 const IMG_BASE = import.meta.env.BASE_URL + 'images/orokin/'
 
-const GLYPH_H     = 48
-const VOWEL_H     = 24
-const LETTER_GAP  = 6
-const WORD_GAP    = 20
-const CANVAS_H    = GLYPH_H + VOWEL_H + 8
-const BASELINE_Y  = VOWEL_H + 4
+// Scaled-up glyph dimensions for better visibility
+const GLYPH_H   = 80   // consonant glyph height
+const VOWEL_H   = 38   // vowel glyph height
+const LETTER_GAP = 10
+const WORD_GAP   = 32
+const PAD_TOP    = 8   // padding above vowels
+const PAD_BOT    = 8   // padding below consonant
+const CANVAS_H   = PAD_TOP + VOWEL_H + GLYPH_H + PAD_BOT
+const BASELINE_Y = PAD_TOP + VOWEL_H  // top of consonant row
+
+// Dark background to match the UI theme
+const BG_COLOR = '#1c2030'
 
 const imgCache: Record<string, HTMLImageElement> = {}
 
@@ -32,23 +38,20 @@ type Syllable = { cons: string | null; vowels: string[] }
 
 /**
  * Group phonemes into syllables.
- * A vowel belongs to the consonant BEFORE it.
- * Leading vowels (no preceding consonant) get a silent 'h'.
+ * Each consonant starts a new syllable; vowels attach to the consonant before them.
+ * Leading vowels (no preceding consonant) get a silent ghost 'h'.
  */
 function toSyllables(phonemes: OrokinPhoneme[]): (Syllable | ' ')[] {
   const result: (Syllable | ' ')[] = []
   let cur: Syllable | null = null
-
   const flush = () => { if (cur) { result.push(cur); cur = null } }
-
   for (const ph of phonemes) {
     if (ph === ' ') { flush(); result.push(' '); continue }
     if (isMisc(ph)) { flush(); result.push({ cons: ph, vowels: [] }); continue }
     if (isVowel(ph)) {
-      if (!cur) cur = { cons: null, vowels: [] }
+      if (!cur) cur = { cons: null, vowels: [] }  // ghost-h syllable
       cur.vowels.push(ph)
     } else {
-      // new consonant: flush previous syllable first
       flush()
       cur = { cons: ph, vowels: [] }
     }
@@ -57,43 +60,74 @@ function toSyllables(phonemes: OrokinPhoneme[]): (Syllable | ' ')[] {
   return result
 }
 
+/** Returns the natural width of an image, or fallback if not loaded yet. */
+function imgW(img: HTMLImageElement, fallback: number): number {
+  return (img.complete && img.naturalWidth > 0) ? img.naturalWidth : fallback
+}
+function imgH(img: HTMLImageElement, fallback: number): number {
+  return (img.complete && img.naturalHeight > 0) ? img.naturalHeight : fallback
+}
+
 function syllableWidth(syl: Syllable): number {
-  const ci = syl.cons ? getImg(syl.cons) : getImg('h')
-  const cW = ci.complete && ci.naturalWidth > 0 ? ci.naturalWidth : 32
-  if (syl.vowels.length === 0) return cW
+  const cImg = syl.cons ? getImg(syl.cons) : getImg('h')
+  // Scale consonant to GLYPH_H preserving aspect ratio
+  const cNH = imgH(cImg, GLYPH_H)
+  const cNW = imgW(cImg, 40)
+  const cW  = cNH > 0 ? Math.round(cNW * GLYPH_H / cNH) : cNW
+
   let vW = 0
-  syl.vowels.forEach((v, i) => {
-    const vi = getImg(v)
-    vW += (vi.complete && vi.naturalWidth > 0 ? vi.naturalWidth : 20) + (i > 0 ? 2 : 0)
-  })
+  for (let i = 0; i < syl.vowels.length; i++) {
+    const vi = getImg(syl.vowels[i])
+    const vNH = imgH(vi, VOWEL_H)
+    const vNW = imgW(vi, 24)
+    const vScaledW = vNH > 0 ? Math.round(vNW * VOWEL_H / vNH) : vNW
+    vW += vScaledW + (i > 0 ? 3 : 0)
+  }
   return Math.max(cW, vW)
 }
 
-function drawSyllable(ctx: CanvasRenderingContext2D, syl: Syllable, x: number): number {
+function drawSyllable(
+  ctx: CanvasRenderingContext2D,
+  syl: Syllable,
+  x: number
+): number {
   const cImg = syl.cons ? getImg(syl.cons) : (syl.vowels.length > 0 ? getImg('h') : null)
-  const cW = cImg && cImg.complete && cImg.naturalWidth > 0 ? cImg.naturalWidth : 0
-  const cH = cImg && cImg.complete && cImg.naturalHeight > 0 ? cImg.naturalHeight : GLYPH_H
 
-  const vImgs: HTMLImageElement[] = []
-  let vW = 0
+  // Scale consonant to GLYPH_H
+  let cW = 0
+  if (cImg && cImg.complete && cImg.naturalWidth > 0) {
+    cW = Math.round(cImg.naturalWidth * GLYPH_H / (cImg.naturalHeight || GLYPH_H))
+  }
+
+  // Collect scaled vowel images
+  const vImgs: { img: HTMLImageElement; w: number; h: number }[] = []
+  let vTotalW = 0
   for (const v of syl.vowels) {
     const vi = getImg(v)
     if (vi.complete && vi.naturalWidth > 0) {
-      vW += vi.naturalWidth + (vImgs.length > 0 ? 2 : 0)
-      vImgs.push(vi)
+      const vH = VOWEL_H
+      const vW2 = Math.round(vi.naturalWidth * vH / (vi.naturalHeight || vH))
+      vImgs.push({ img: vi, w: vW2, h: vH })
+      vTotalW += vW2 + (vImgs.length > 1 ? 3 : 0)
     }
   }
 
-  const totalW = Math.max(cW, vW)
+  const totalW = Math.max(cW, vTotalW, 8)
 
+  // Draw consonant (centered horizontally in the slot)
   if (cImg && cImg.complete && cImg.naturalWidth > 0) {
-    ctx.drawImage(cImg, x + (totalW - cW) / 2, BASELINE_Y, cW, cH)
+    const cx = x + Math.round((totalW - cW) / 2)
+    ctx.drawImage(cImg, cx, BASELINE_Y, cW, GLYPH_H)
   }
+
+  // Draw vowels centered above consonant
   if (vImgs.length > 0) {
-    let vx = x + (totalW - vW) / 2
-    for (const vi of vImgs) {
-      ctx.drawImage(vi, vx, BASELINE_Y - vi.naturalHeight - 2, vi.naturalWidth, vi.naturalHeight)
-      vx += vi.naturalWidth + 2
+    let vx = x + Math.round((totalW - vTotalW) / 2)
+    for (const { img, w, h } of vImgs) {
+      // Vowels sit just above the consonant baseline
+      const vy = PAD_TOP + (VOWEL_H - h)
+      ctx.drawImage(img, vx, vy, w, h)
+      vx += w + 3
     }
   }
 
@@ -106,7 +140,7 @@ function measureWidth(syllables: (Syllable | ' ')[]): number {
     if (s === ' ') { w += WORD_GAP; continue }
     w += syllableWidth(s) + LETTER_GAP
   }
-  return Math.max(w - LETTER_GAP, 4)
+  return Math.max(w - LETTER_GAP, 8)
 }
 
 interface Props {
@@ -123,15 +157,17 @@ export default function OrokinCanvas({ phonemes }: Props) {
     if (!ctx) return
 
     if (phonemes.length === 0) {
-      canvas.width = 10; canvas.height = CANVAS_H
-      ctx.fillStyle = '#ffffff'
+      canvas.width  = 10
+      canvas.height = CANVAS_H
+      ctx.fillStyle = BG_COLOR
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       return
     }
 
+    // Collect all unique phonemes that need images
     const needed = new Set<string>()
     phonemes.forEach(ph => { if (ph !== ' ') needed.add(ph) })
-    needed.add('h')
+    needed.add('h')  // always preload ghost-h
 
     let loaded = 0
     const total = needed.size
@@ -140,7 +176,7 @@ export default function OrokinCanvas({ phonemes }: Props) {
       const syllables = toSyllables(phonemes)
       canvas.width  = measureWidth(syllables)
       canvas.height = CANVAS_H
-      ctx.fillStyle = '#f5ede0'
+      ctx.fillStyle = BG_COLOR
       ctx.fillRect(0, 0, canvas.width, canvas.height)
       let x = 0
       for (const s of syllables) {
