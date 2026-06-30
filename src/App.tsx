@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { orokinPhoneticize } from './orokinPhoneticize';
 import type { OrokinPhoneme } from './orokinPhoneticize';
 import OrokinCanvas from './components/OrokinCanvas';
@@ -34,18 +34,27 @@ async function copyCanvas(canvas: HTMLCanvasElement) {
 
 export default function App() {
   const [mode, setMode] = useState<Mode>('english-to-orokin');
-  const [theme, setTheme] = useState<Theme>('dark');
+    const [theme, setTheme] = useState<Theme>('dark');
   const [englishText, setEnglishText] = useState('');
   const [vkPhonemes, setVkPhonemes] = useState<OrokinPhoneme[]>([]);
   const [swapped, setSwapped] = useState(false);
   const [copyMsg, setCopyMsg] = useState<string | null>(null);
 
+  // Refs to the rendered canvases for save/copy
   const engCanvasRef = useRef<HTMLCanvasElement | null>(null)
-  const vkCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const vkCanvasRef  = useRef<HTMLCanvasElement | null>(null)
 
   const engPhonemes: OrokinPhoneme[] = orokinPhoneticize(englishText);
 
+    // Apply theme to document root
+  useEffect(() => {
+    document.documentElement.className = theme;
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(s => s === 'dark' ? 'light' : 'dark');
+
   const handleSwap = () => setSwapped(s => !s);
+
   const handleVKInsert = (phoneme: OrokinPhoneme) =>
     setVkPhonemes(prev => [...prev, phoneme]);
   const handleVKSpace = () =>
@@ -72,36 +81,18 @@ export default function App() {
     const c = activeCanvas()
     if (!c) return
     const ok = await copyCanvas(c)
-    setCopyMsg(ok ? '\u2713 \u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u043e!' : '\u0411\u0440\u0430\u0443\u0437\u0435\u0440 \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 \u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435')
+    setCopyMsg(ok ? '✓ Скопировано!' : 'Браузер не поддерживает копирование')
     setTimeout(() => setCopyMsg(null), 3000)
   }
 
-  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
-
-    // Apply theme class to body element
-  useEffect(() => {
-    if (theme === 'light') {
-      document.body.classList.add('theme-light');
-    } else {
-      document.body.classList.remove('theme-light');
-    }
-  }, [theme]);
-
   return (
-    <div className={`app theme-${theme}`}>
+    <div className="app">
       <header className="app-header">
-        
-  
-        <div className="header-row">
-          <div />
-          <div>
-            <h1>Orokinbet Tool</h1>
-            <p className="subtitle">\u0418\u043d\u0441\u0442\u0440\u0443\u043c\u0435\u043d\u0442 \u0434\u043b\u044f \u0440\u0430\u0431\u043e\u0442\u044b \u0441 \u0430\u043b\u0444\u0430\u0432\u0438\u0442\u043e\u043c Orokinbet</p>
-          </div>
-          <button className="theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? '\u0421\u0432\u0435\u0442\u043b\u0430\u044f \u0442\u0435\u043c\u0430' : '\u0422\u0451\u043c\u043d\u0430\u044f \u0442\u0435\u043c\u0430'}>
-            {theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'}
-          </button>
-        </div>
+        <h1>Orokinbet Tool</h1>
+        <p className="subtitle">Инструмент для работы с алфавитом Orokinbet</p>
+                <button className="theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
       </header>
 
       <div className="mode-tabs">
@@ -109,13 +100,13 @@ export default function App() {
           className={`tab-btn${mode === 'english-to-orokin' ? ' active' : ''}`}
           onClick={() => setMode('english-to-orokin')}
         >
-          English \u2192 Orokin
+          English → Orokin
         </button>
         <button
           className={`tab-btn${mode === 'orokin-input' ? ' active' : ''}`}
           onClick={() => setMode('orokin-input')}
         >
-          \u0412\u0438\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u0430\u044f \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0430
+          Виртуальная клавиатура
         </button>
       </div>
 
@@ -123,32 +114,32 @@ export default function App() {
         <div className="translator-panel">
           <div className="panel">
             <div className="panel-block">
-              <label>{swapped ? 'Orokin (\u0444\u043e\u043d\u0435\u043c\u044b)' : 'English'}</label>
+              <label>{swapped ? 'Orokin (фонемы)' : 'English'}</label>
               {!swapped ? (
                 <textarea
                   className="text-input"
                   value={englishText}
                   onChange={e => setEnglishText(e.target.value)}
-                  placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043a\u0441\u0442 \u043d\u0430 \u0430\u043d\u0433\u043b\u0438\u0439\u0441\u043a\u043e\u043c..."
+                  placeholder="Введите текст на английском..."
                   rows={4}
                 />
               ) : (
                 <div className="phoneme-list">
                   {engPhonemes.length === 0 ? (
-                    <span className="placeholder">\u0444\u043e\u043d\u0435\u043c\u044b \u043f\u043e\u044f\u0432\u044f\u0442\u0441\u044f \u0437\u0434\u0435\u0441\u044c...</span>
+                    <span className="placeholder">фонемы появятся здесь...</span>
                   ) : (
                     engPhonemes.map((ph, i) => (
                       <span key={i} className={`phoneme-tag${ph === ' ' ? ' space-tag' : ''}`}>
-                        {ph === ' ' ? '\u2423' : ph}
+                        {ph === ' ' ? '␣' : ph}
                       </span>
                     ))
                   )}
                 </div>
               )}
             </div>
-            <button className="swap-btn" onClick={handleSwap} title="\u041f\u043e\u043c\u0435\u043d\u044f\u0442\u044c \u043c\u0435\u0441\u0442\u0430\u043c\u0438">\u21c4</button>
+            <button className="swap-btn" onClick={handleSwap} title="Поменять местами">⇄</button>
             <div className="panel-block">
-              <label>{swapped ? 'English' : 'Orokin (\u0433\u043b\u0438\u0444\u044b)'}</label>
+              <label>{swapped ? 'English' : 'Orokin (глифы)'}</label>
               {!swapped ? (
                 <OrokinCanvas phonemes={engPhonemes} onCanvasReady={onEngCanvasReady} />
               ) : (
@@ -156,23 +147,22 @@ export default function App() {
                   className="text-input"
                   value={englishText}
                   onChange={e => setEnglishText(e.target.value)}
-                  placeholder="\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0442\u0435\u043a\u0441\u0442 \u043d\u0430 \u0430\u043d\u0433\u043b\u0438\u0439\u0441\u043a\u043e\u043c..."
+                  placeholder="Введите текст на английском..."
                   rows={4}
                 />
               )}
             </div>
           </div>
-
           {engPhonemes.length > 0 && (
             <div className="canvas-actions">
-              <button className="btn btn-save" onClick={handleDownload}>\u2b07 \u0421\u043a\u0430\u0447\u0430\u0442\u044c PNG</button>
-              <button className="btn btn-copy" onClick={handleCopy}>\ud83d\udccb \u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c</button>
+              <button className="btn btn-save" onClick={handleDownload}>⬇ Скачать PNG</button>
+              <button className="btn btn-copy" onClick={handleCopy}>📋 Копировать</button>
               {copyMsg && <span className="copy-msg">{copyMsg}</span>}
             </div>
           )}
           {engPhonemes.length > 0 && (
             <div className="phoneme-debug">
-              <strong>\u0424\u043e\u043d\u0435\u043c\u044b:</strong> {engPhonemes.join(' \u00b7 ')}
+              <strong>Фонемы:</strong> {engPhonemes.join(' · ')}
             </div>
           )}
         </div>
@@ -181,36 +171,32 @@ export default function App() {
       {mode === 'orokin-input' && (
         <div className="vk-panel">
           <div className="vk-output">
-            <label>\u0412\u0432\u0435\u0434\u0451\u043d\u043d\u044b\u0435 \u0444\u043e\u043d\u0435\u043c\u044b:</label>
+            <label>Введённые фонемы:</label>
             <div className="phoneme-list">
               {vkPhonemes.length === 0 ? (
-                <span className="placeholder">\u041d\u0430\u0436\u0438\u043c\u0430\u0439\u0442\u0435 \u043a\u043d\u043e\u043f\u043a\u0438 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b...</span>
+                <span className="placeholder">Нажимайте кнопки клавиатуры...</span>
               ) : (
                 vkPhonemes.map((ph, i) => (
                   <span key={i} className={`phoneme-tag${ph === ' ' ? ' space-tag' : ''}`}>
-                    {ph === ' ' ? '\u2423' : ph}
+                    {ph === ' ' ? '␣' : ph}
                   </span>
                 ))
               )}
             </div>
           </div>
-
           <OrokinCanvas phonemes={vkPhonemes} onCanvasReady={onVkCanvasReady} />
-
           {vkPhonemes.length > 0 && (
             <div className="canvas-actions">
-              <button className="btn btn-save" onClick={handleDownload}>\u2b07 \u0421\u043a\u0430\u0447\u0430\u0442\u044c PNG</button>
-              <button className="btn btn-copy" onClick={handleCopy}>\ud83d\udccb \u041a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c</button>
+              <button className="btn btn-save" onClick={handleDownload}>⬇ Скачать PNG</button>
+              <button className="btn btn-copy" onClick={handleCopy}>📋 Копировать</button>
               {copyMsg && <span className="copy-msg">{copyMsg}</span>}
             </div>
           )}
-
           <VirtualKeyboard
             onInsert={handleVKInsert}
             onBackspace={handleVKBackspace}
             onClear={handleVKClear}
             onSpace={handleVKSpace}
-            theme={theme}
           />
         </div>
       )}
