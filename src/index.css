@@ -343,3 +343,50 @@ body {
 .orokin-canvas-wrapper canvas {
   image-rendering: pixelated;
 }
+
+/* -- Canvas Actions (save / copy) -- */
+.canvas-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn-save {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-save:hover {
+  background: var(--accent-dim);
+  color: #fff;
+}
+.btn-copy {
+  border-color: var(--vowel-color);
+  color: var(--vowel-color);
+}
+.btn-copy:hover {
+  background: var(--vowel-color);
+  color: #000;
+}
+.copy-msg {
+  font-size: 0.85rem;
+  color: #7ec87e;
+  font-style: italic;
+}
+
+/* -- OrokinCanvas wrapper scrollable -- */
+.orokin-canvas-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+}
+.orokin-canvas-wrapper canvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
