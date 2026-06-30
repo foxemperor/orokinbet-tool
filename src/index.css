@@ -4,20 +4,38 @@
   padding: 0;
 }
 
+/* === DARK THEME (default) === */
 :root {
-  --bg-dark:      #0d0f14;
-  --bg-panel:     #151821;
-  --bg-card:      #1c2030;
-  --border:       #2a3050;
-  --accent:       #c8a96e;
+  --bg-dark: #0d0f14;
+  --bg-panel: #151821;
+  --bg-card: #1c2030;
+  --border: #2a3050;
+  --accent: #c8a96e;
   --accent-hover: #e0c080;
-  --accent-dim:   #8a6e3a;
+  --accent-dim: #8a6e3a;
   --text-primary: #e8e0d0;
-  --text-muted:   #8890a8;
-  --vowel-color:  #6eafc8;
-  --cons-color:   #c8a96e;
-  --swap-color:   #7e6ec8;
-  --danger:       #c86e6e;
+  --text-muted: #8890a8;
+  --vowel-color: #6eafc8;
+  --cons-color: #c8a96e;
+  --swap-color: #7e6ec8;
+  --danger: #c86e6e;
+}
+
+/* === LIGHT THEME === */
+.theme-light {
+  --bg-dark: #f5f5f5;
+  --bg-panel: #ffffff;
+  --bg-card: #fafafa;
+  --border: #d0d0d0;
+  --accent: #8b6f3a;
+  --accent-hover: #a58a50;
+  --accent-dim: #b39b65;
+  --text-primary: #1a1a1a;
+  --text-muted: #666666;
+  --vowel-color: #2e7a9a;
+  --cons-color: #8b6f3a;
+  --swap-color: #5a4a9a;
+  --danger: #c84040;
 }
 
 body {
@@ -27,7 +45,6 @@ body {
   min-height: 100vh;
 }
 
-/* -- Layout -- */
 .app {
   max-width: 1100px;
   margin: 0 auto;
@@ -37,30 +54,60 @@ body {
   gap: 24px;
 }
 
+/* === HEADER === */
 .app-header {
   text-align: center;
 }
-
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.header-row > div:first-child,
+.header-row > button {
+  width: 60px;
+  flex-shrink: 0;
+}
+.header-row > div:nth-child(2) {
+  flex: 1;
+}
 .app-header h1 {
   font-size: 2rem;
   color: var(--accent);
   letter-spacing: 2px;
   text-transform: uppercase;
 }
-
 .subtitle {
   color: var(--text-muted);
   margin-top: 4px;
   font-size: 0.9rem;
 }
+.theme-toggle {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-toggle:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
 
-/* -- Mode Tabs -- */
+/* === MODE TABS === */
 .mode-tabs {
   display: flex;
   gap: 8px;
   justify-content: center;
 }
-
 .tab-btn {
   padding: 8px 24px;
   background: var(--bg-card);
@@ -71,12 +118,10 @@ body {
   font-size: 0.95rem;
   transition: all 0.2s;
 }
-
 .tab-btn:hover {
   border-color: var(--accent-dim);
   color: var(--text-primary);
 }
-
 .tab-btn.active {
   background: var(--accent-dim);
   border-color: var(--accent);
@@ -84,33 +129,29 @@ body {
   font-weight: 600;
 }
 
-/* -- Translator panel -- */
+/* === TRANSLATOR PANEL === */
 .translator-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
 .panel {
   display: flex;
   gap: 16px;
   align-items: flex-start;
 }
-
 .panel-block {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
 .panel-block label {
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-muted);
 }
-
 .text-input {
   width: 100%;
   background: var(--bg-card);
@@ -122,12 +163,10 @@ body {
   resize: vertical;
   font-family: inherit;
 }
-
 .text-input:focus {
   outline: none;
   border-color: var(--accent-dim);
 }
-
 .swap-btn {
   align-self: center;
   background: var(--bg-card);
@@ -144,22 +183,12 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
-
 .swap-btn:hover {
   background: var(--swap-color);
   color: #fff;
 }
 
-.phoneme-debug {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 14px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-/* -- Phoneme list -- */
+/* === PHONEME LIST === */
 .phoneme-list {
   display: flex;
   flex-wrap: wrap;
@@ -170,7 +199,6 @@ body {
   border-radius: 6px;
   min-height: 48px;
 }
-
 .phoneme-tag {
   background: var(--bg-panel);
   border: 1px solid var(--border);
@@ -179,20 +207,32 @@ body {
   font-size: 0.85rem;
   color: var(--accent);
 }
-
+.space-tag {
+  background: var(--bg-dark);
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+  font-size: 1rem;
+}
 .placeholder {
   color: var(--text-muted);
   font-style: italic;
   font-size: 0.9rem;
 }
+.phoneme-debug {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
 
-/* -- VK panel -- */
+/* === VK PANEL === */
 .vk-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
 .vk-output label {
   display: block;
   font-size: 0.8rem;
@@ -202,7 +242,7 @@ body {
   margin-bottom: 6px;
 }
 
-/* -- Virtual Keyboard (vkb) -- */
+/* === VIRTUAL KEYBOARD === */
 .vkb {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -212,7 +252,6 @@ body {
   flex-direction: column;
   gap: 12px;
 }
-
 .vkb-section-label {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -221,13 +260,11 @@ body {
   padding-bottom: 4px;
   border-bottom: 1px solid var(--border);
 }
-
 .vkb-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
-
 .vkb-key {
   display: flex;
   flex-direction: column;
@@ -241,40 +278,69 @@ body {
   transition: all 0.15s;
   min-width: 52px;
 }
-
 .vkb-key:hover {
   border-color: var(--accent-dim);
   background: var(--bg-dark);
 }
-
 .vkb-key img {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
-
 .vkb-key .key-phoneme {
   font-size: 0.7rem;
   color: var(--text-muted);
 }
-
 .vkb-key.vowel {
   border-color: var(--vowel-color);
 }
-
 .vkb-key.vowel .key-phoneme {
   color: var(--vowel-color);
 }
-
-.vkb-key.misc {
-  border-color: var(--border);
+.vkb-key .key-icon {
+  font-size: 1.4rem;
+  color: var(--text-primary);
 }
 
-.btn-row {
+/* Glyph invert for dark mode */
+.glyph-invert {
+  filter: invert(1);
+}
+
+/* === BOTTOM ROW (Space, Backspace, Clear) === */
+.vkb-bottom-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 8px;
+}
+.vkb-key-backspace {
+  min-width: 80px;
+}
+.vkb-key-space {
+  flex: 1;
+  min-width: 200px;
+}
+.vkb-key-clear {
+  min-width: 80px;
+  border-color: var(--danger);
+}
+.vkb-key-clear .key-icon {
+  color: var(--danger);
+}
+.vkb-key-clear .key-phoneme {
+  color: var(--danger);
+}
+.vkb-key-clear:hover {
+  background: var(--danger);
+}
+.vkb-key-clear:hover .key-icon,
+.vkb-key-clear:hover .key-phoneme {
+  color: #fff;
 }
 
+/* === BUTTONS === */
 .btn {
   padding: 8px 18px;
   background: var(--bg-panel);
@@ -285,71 +351,8 @@ body {
   font-size: 0.9rem;
   transition: all 0.15s;
 }
-
 .btn:hover {
   border-color: var(--accent-dim);
-}
-
-.btn-danger {
-  border-color: var(--danger);
-  color: var(--danger);
-}
-
-.btn-danger:hover {
-  background: var(--danger);
-  color: #fff;
-}
-
-/* -- OrokinCanvas -- */
-.orokin-canvas-wrapper {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px;
-  display: flex;
-  justify-content: center;
-}
-
-.orokin-canvas-wrapper canvas {
-  display: block;
-  max-width: 100%;
-}
-
-/* -- Space tag -- */
-.space-tag {
-  background: var(--bg-dark);
-  border-color: var(--text-muted);
-  color: var(--text-muted);
-  font-size: 1rem;
-}
-
-/* -- Space button -- */
-.btn-space {
-  border-color: var(--accent-dim);
-  color: var(--accent);
-  font-size: 1rem;
-}
-.btn-space:hover {
-  background: var(--accent-dim);
-  color: var(--bg-dark);
-}
-
-/* -- OrokinCanvas min height so it's always visible -- */
-.orokin-canvas-wrapper {
-  min-height: 140px;
-  align-items: center;
-  overflow-x: auto;
-}
-.orokin-canvas-wrapper canvas {
-  image-rendering: pixelated;
-}
-
-/* -- Canvas Actions (save / copy) -- */
-.canvas-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 .btn-save {
   border-color: var(--accent);
@@ -367,13 +370,19 @@ body {
   background: var(--vowel-color);
   color: #000;
 }
+.canvas-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .copy-msg {
   font-size: 0.85rem;
   color: #7ec87e;
   font-style: italic;
 }
 
-/* -- OrokinCanvas wrapper scrollable -- */
+/* === OROKIN CANVAS === */
 .orokin-canvas-wrapper {
   overflow-x: auto;
   overflow-y: hidden;
