@@ -9,6 +9,7 @@ interface Props {
   onInsert: (phoneme: OrokinPhoneme) => void
   onBackspace: () => void
   onClear: () => void
+  onSpace: () => void
 }
 
 const IMG_BASE = import.meta.env.BASE_URL + 'images/orokin/'
@@ -27,10 +28,9 @@ const MISC_KEYS: OrokinPhoneme[] = [
   '0','1','2','3','4','5','6','7','8','9'
 ]
 
-export default function VirtualKeyboard({ onInsert, onBackspace, onClear }: Props) {
+export default function VirtualKeyboard({ onInsert, onBackspace, onClear, onSpace }: Props) {
   return (
     <div className="vkb">
-
       <div className="vkb-section-label">Согласные</div>
       <div className="vkb-row">
         {CONSONANTS.map(ph => (
@@ -45,7 +45,6 @@ export default function VirtualKeyboard({ onInsert, onBackspace, onClear }: Prop
           </button>
         ))}
       </div>
-
       <div className="vkb-section-label">Гласные — ставятся над предыдущим согласным</div>
       <div className="vkb-row">
         {(VOWELS as OrokinPhoneme[]).map(ph => (
@@ -60,7 +59,6 @@ export default function VirtualKeyboard({ onInsert, onBackspace, onClear }: Prop
           </button>
         ))}
       </div>
-
       <div className="vkb-section-label">Цифры и пунктуация</div>
       <div className="vkb-row">
         {MISC_KEYS.map(ph => (
@@ -75,12 +73,11 @@ export default function VirtualKeyboard({ onInsert, onBackspace, onClear }: Prop
           </button>
         ))}
       </div>
-
       <div className="btn-row" style={{ marginTop: 8 }}>
+        <button className="btn btn-space" onClick={onSpace} title="Пробел">␣ Пробел</button>
         <button className="btn" onClick={onBackspace}>⌫ Удалить</button>
         <button className="btn btn-danger" onClick={onClear}>✕ Очистить</button>
       </div>
-
     </div>
   )
 }
