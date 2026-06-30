@@ -56,7 +56,7 @@ export default function VirtualKeyboard({ onInsert, onBackspace, onClear, onSpac
             title={ph}
             onClick={() => onInsert(ph)}
           >
-            <img src={imgSrc(ph)} alt={ph} className={isDark ? 'glyph-invert' : ''} />
+            <img src={imgSrc(ph)} alt={ph} className={!isDark ? 'glyph-invert' : ''} />
             <span className="key-phoneme">{ph}</span>
           </button>
         ))}
@@ -70,7 +70,7 @@ export default function VirtualKeyboard({ onInsert, onBackspace, onClear, onSpac
             title={ph}
             onClick={() => onInsert(ph)}
           >
-            <img src={imgSrc(ph)} alt={ph} className={isDark ? 'glyph-invert' : ''} />
+            <img src={imgSrc(ph)} alt={ph} className={!isDark ? 'glyph-invert' : ''} />
             <span className="key-phoneme">{ph}</span>
           </button>
         ))}
