@@ -427,3 +427,22 @@ export function phoneticize(word: string): OrokinPhoneme[] {
   }
 
   // ── Post-processing: remove consecutive duplicates
+
+    const final: OrokinPhoneme[] = [];
+    for (let i = 0; i < out.length; i++) {
+      if (i === 0 || out[i] !== out[i - 1]) {
+        final.push(out[i]);
+      }
+    }
+    return final;
+  }
+
+  const result: OrokinPhoneme[] = [];
+  for (const word of words) {
+    const phonemes = processWord(word);
+    result.push(...phonemes);
+  }
+  return result;
+}
+
+export { orokinPhoneticize };
