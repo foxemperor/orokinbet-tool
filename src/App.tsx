@@ -21,6 +21,9 @@ export default function App() {
   const handleVKInsert = (phoneme: OrokinPhoneme) => {
     setVkPhonemes(prev => [...prev, phoneme]);
   };
+  const handleVKSpace = () => {
+    setVkPhonemes(prev => [...prev, ' ' as OrokinPhoneme]);
+  };
   const handleVKBackspace = () => {
     setVkPhonemes(prev => prev.slice(0, -1));
   };
@@ -63,15 +66,19 @@ export default function App() {
                 />
               ) : (
                 <div className="phoneme-list">
-                  {engPhonemes.map((ph, i) => (
-                    <span key={i} className="phoneme-tag">{ph}</span>
-                  ))}
+                  {engPhonemes.length === 0 ? (
+                    <span className="placeholder">фонемы появятся здесь...</span>
+                  ) : (
+                    engPhonemes.map((ph, i) => (
+                      <span key={i} className={`phoneme-tag${ph === ' ' ? ' space-tag' : ''}`}>
+                        {ph === ' ' ? '␣' : ph}
+                      </span>
+                    ))
+                  )}
                 </div>
               )}
             </div>
-
             <button className="swap-btn" onClick={handleSwap} title="Поменять местами">⇄</button>
-
             <div className="panel-block">
               <label>{swapped ? 'English' : 'Orokin (глифы)'}</label>
               {!swapped ? (
@@ -87,7 +94,6 @@ export default function App() {
               )}
             </div>
           </div>
-
           {engPhonemes.length > 0 && (
             <div className="phoneme-debug">
               <strong>Фонемы:</strong> {engPhonemes.join(' · ')}
@@ -117,6 +123,7 @@ export default function App() {
             onInsert={handleVKInsert}
             onBackspace={handleVKBackspace}
             onClear={handleVKClear}
+            onSpace={handleVKSpace}
           />
         </div>
       )}
