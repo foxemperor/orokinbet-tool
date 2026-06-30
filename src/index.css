@@ -37,10 +37,11 @@
   --swap-color: #5a4a9a;
   --danger: #c84040;
 
-    /* Invert glyph images for light theme */
-  .glyph-btn img {
-    filter: invert(1);
-  }
+}
+
+/* Invert glyph images (for light theme) */
+.glyph-invert {
+  filter: invert(1);
 }
 
 body {
