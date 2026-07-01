@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     width="1000" height="1000" 
+     viewBox="0 0 1000 1000">
+  <g fill="#000000">
+    <rect x="90.00" y="90.00" width="223.64" height="102.50"/>
+    <rect x="611.82" y="90.00" width="298.18" height="102.50"/>
+    <rect x="90.00" y="192.50" width="223.64" height="102.50"/>
+    <rect x="611.82" y="192.50" width="298.18" height="102.50"/>
+    <rect x="90.00" y="295.00" width="223.64" height="102.50"/>
+    <rect x="611.82" y="295.00" width="223.64" height="102.50"/>
+    <rect x="90.00" y="397.50" width="223.64" height="102.50"/>
+    <rect x="611.82" y="397.50" width="223.64" height="102.50"/>
+    <rect x="90.00" y="500.00" width="223.64" height="102.50"/>
+    <rect x="537.27" y="500.00" width="223.64" height="102.50"/>
+    <rect x="90.00" y="602.50" width="223.64" height="102.50"/>
+    <rect x="537.27" y="602.50" width="223.64" height="102.50"/>
+    <rect x="90.00" y="705.00" width="223.64" height="102.50"/>
+    <rect x="462.73" y="705.00" width="223.64" height="102.50"/>
+    <rect x="90.00" y="807.50" width="447.27" height="102.50"/>
+  </g>
+</svg>

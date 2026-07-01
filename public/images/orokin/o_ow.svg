@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" 
+     width="1000" height="1000" 
+     viewBox="0 0 1000 1000">
+  <g fill="#000000">
+    <rect x="90.00" y="90.00" width="702.86" height="102.50"/>
+    <rect x="675.71" y="192.50" width="175.71" height="102.50"/>
+    <rect x="324.29" y="295.00" width="117.14" height="102.50"/>
+    <rect x="734.29" y="295.00" width="175.71" height="102.50"/>
+    <rect x="265.71" y="397.50" width="234.29" height="102.50"/>
+    <rect x="734.29" y="397.50" width="175.71" height="102.50"/>
+    <rect x="265.71" y="500.00" width="234.29" height="102.50"/>
+    <rect x="734.29" y="500.00" width="175.71" height="102.50"/>
+    <rect x="324.29" y="602.50" width="175.71" height="102.50"/>
+    <rect x="734.29" y="602.50" width="175.71" height="102.50"/>
+    <rect x="382.86" y="705.00" width="175.71" height="102.50"/>
+    <rect x="675.71" y="705.00" width="175.71" height="102.50"/>
+    <rect x="441.43" y="807.50" width="351.43" height="102.50"/>
+  </g>
+</svg>
