@@ -17,10 +17,10 @@ const IMG_BASE = import.meta.env.BASE_URL + 'images/orokin/'
 
 function imgSrc(ph: OrokinPhoneme): string {
   switch (ph) {
-    case ',': return IMG_BASE + 'o_Comma.png'
-    case '.': return IMG_BASE + 'o_Period.png'
-    case '-': return IMG_BASE + 'o_Hyphen.png'
-    default:  return IMG_BASE + 'o_' + ph + '.png'
+    case ',': return IMG_BASE + 'o_Comma.svg'
+    case '.': return IMG_BASE + 'o_Period.svg'
+    case '-': return IMG_BASE + 'o_Hyphen.svg'
+    default:  return IMG_BASE + 'o_' + ph + '.svg'
   }
 }
 
