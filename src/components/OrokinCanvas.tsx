@@ -23,10 +23,10 @@ function getImg(phoneme: string): HTMLImageElement {
   if (imgCache[phoneme]) return imgCache[phoneme]
   const img = new Image()
   switch (phoneme) {
-    case ',': img.src = IMG_BASE + 'o_Comma.png'; break
-    case '.': img.src = IMG_BASE + 'o_Period.png'; break
-    case '-': img.src = IMG_BASE + 'o_Hyphen.png'; break
-    default:  img.src = IMG_BASE + 'o_' + phoneme + '.png'
+    case ',': img.src = IMG_BASE + 'o_Comma.svg'; break
+    case '.': img.src = IMG_BASE + 'o_Period.svg'; break
+    case '-': img.src = IMG_BASE + 'o_Hyphen.svg'; break
+    default:  img.src = IMG_BASE + 'o_' + phoneme + '.svg'
   }
   imgCache[phoneme] = img
   return img
